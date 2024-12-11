@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)
+
+# Source all module scripts
+source "$SCRIPT_DIR/modules/config.sh"
+source "$SCRIPT_DIR/modules/logging.sh"
+source "$SCRIPT_DIR/modules/utils.sh"
+source "$SCRIPT_DIR/modules/registry.sh"
+source "$SCRIPT_DIR/modules/init.sh"
+source "$SCRIPT_DIR/modules/hosts.sh"
+source "$SCRIPT_DIR/modules/users.sh"
+source "$SCRIPT_DIR/modules/modules.sh"
+source "$SCRIPT_DIR/modules/ssh.sh"
+source "$SCRIPT_DIR/modules/vm.sh"
+
+print_usage() {
+  cat <<EOF
+Usage: nixhelp <command> [options]
+
+Commands:
+    init [directory]                 Initialize new NixOS configuration
+    host add <name>                 Add new host
+    vm add <name>                   Add new VM host
+    user add <name> [host]          Add new user
+    module add <type> <name>        Add new module (nixos|home|dev)
+    deploy <host> [type]            Deploy to host (nixos|home|both)
+    list (hosts|users|modules)      List registered components
+
+Options vary by command. Use 'nixhelp <command> --help' for more information.
+EOF
+}
+
+main() {
+  if [ $# -eq 0 ]; then
+    print_usage
+    exit 1
+  fi
+
+  local command="$1"
+  shift
+
+  case "$command" in
+  init)
+    init_config "$@"
+    ;;
+  host)
+    case "$1" in
+    add)
+      shift
+      create_host "$@"
+      ;;
+    *)
+      echo "Unknown host subcommand: $1"
+      exit 1
+      ;;
+    esac
+    ;;
+  vm)
+    case "$1" in
+    add)
+      shift
+      create_vm_host "$@"
+      ;;
+    deploy)
+      shift
+      deploy_config "$@"
+      ;;
+    *)
+      echo "Unknown vm subcommand: $1"
+      exit 1
+      ;;
+    esac
+    ;;
+  user)
+    case "$1" in
+    add)
+      shift
+      create_user "$@"
+      ;;
+    *)
+      echo "Unknown user subcommand: $1"
+      exit 1
+      ;;
+    esac
+    ;;
+  module)
+    case "$1" in
+    add)
+      shift
+      create_module "$@"
+      ;;
+    *)
+      echo "Unknown module subcommand: $1"
+      exit 1
+      ;;
+    esac
+    ;;
+  list)
+    case "$1" in
+    hosts)
+      list_hosts
+      ;;
+    users)
+      list_users
+      ;;
+    modules)
+      list_modules
+      ;;
+    *)
+      echo "Unknown list type: $1"
+      exit 1
+      ;;
+    esac
+    ;;
+  *)
+    echo "Unknown command: $command"
+    print_usage
+    exit 1
+    ;;
+  esac
+}
+
+main "$@"

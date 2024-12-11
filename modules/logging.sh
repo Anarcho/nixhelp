@@ -3,5 +3,19 @@
 log() {
   local level="$1"
   local message="$2"
-  echo "[$(date '+%y-%m-%-d %H:%M:%S')] [$level] $message" | tee -a "$LOG_DIR/nixhelp.log"
+  local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+  echo "[$timestamp] [$level] $message" | tee -a "$LOG_DIR/nixhelp.log"
+}
+
+error() {
+  log "ERROR" "$1"
+  exit 1
+}
+
+warn() {
+  log "WARN" "$1"
+}
+
+info() {
+  log "INFO" "$1"
 }
