@@ -16,10 +16,69 @@ init_config() {
   # setup git
   echo "Setting up git..."
   configure_git $target_dir
+
+  # setup rgistry
+  echo "Setting up registry..."
+  init_registry $target_dir
 }
 
 init_registry() {
   local target_dir=$1
+  cat <<EOF >"$target_dir/registry.json"
+  {
+  "project": {
+
+          "directory": "$target_dir",
+
+          "initialized_date": "2024-12-12"
+      },
+      "hosts": {
+
+          "physical": [
+              {
+                  "name": "desktop",
+                  "config_path": "hosts/nixos/desktop"
+              }
+          ],
+          "virtual": [
+              {
+                  "name": "test-vm",
+                  "config_path": "hosts/nixos/test-vm",
+                  "ip_address": "192.168.1.100"
+              }
+          ]
+      },
+      "users": [
+          {
+              "name": "user1",
+              "config_path": "home/user1"
+          }
+      ],
+      "modules": {
+          "nixos": [
+              {
+                  "name": "sway",
+                  "path": "modules/nixos/sway"
+              }
+
+          ],
+          "home-manager": [
+              {
+                  "name": "neovim",
+                  "path": "modules/home-manager/neovim"
+              }
+          ],
+          "dev": [
+              {
+
+                  "name": "rust",
+                  "path": "modules/dev/rust"
+              }
+          ]
+      }
+
+  }
+EOF
 }
 
 setup_directory() {
@@ -121,6 +180,7 @@ configure_git() {
 EOF
 
   cd $target_dir
+  # fix - commit to target_dir
   git add .
   git commit -a -m 'Initial commit'
 }
